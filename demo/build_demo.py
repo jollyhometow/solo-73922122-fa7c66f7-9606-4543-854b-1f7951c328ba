@@ -7,7 +7,7 @@ import wasmtime
 
 HERE = Path(__file__).resolve().parent
 
-for name in ("classify", "loop", "spam"):
+for name in ("classify", "loop", "spam", "random-classify", "echo-random"):
     wat_path = HERE / f"{name}.wat"
     wasm_path = HERE / f"{name}.wasm"
     wasm_path.write_bytes(wasmtime.wat2wasm(wat_path.read_bytes()))

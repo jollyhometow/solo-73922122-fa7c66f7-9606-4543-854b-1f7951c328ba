@@ -2,25 +2,36 @@
 
 import json
 
+# The replay endpoint carries a module, a log and a package that itself embeds
+# copies of the first two, so its body ceiling is larger than the other routes.
+_REPLAY_PATH = "/api/v1/replay"
+
 
 class BodyLimitMiddleware:
     """Buffer a bounded request body, then replay it to the ASGI app.
 
     Starlette's multipart parser needs the whole body and may otherwise spool a
     client-controlled number of bytes to disk.  Here the body is capped before
-    parsing, and the cap includes multipart framing in addition to the two
-    payload limits.
+    parsing, and the cap includes multipart framing in addition to the payload
+    limits.
     """
 
-    def __init__(self, app, max_body_bytes: int) -> None:
+    def __init__(self, app, max_body_bytes: int, replay_body_bytes: int) -> None:
         self.app = app
         self.max_body_bytes = max_body_bytes
+        self.replay_body_bytes = replay_body_bytes
+
+    def _limit_for(self, scope) -> int:
+        if scope.get("path") == _REPLAY_PATH:
+            return self.replay_body_bytes
+        return self.max_body_bytes
 
     async def __call__(self, scope, receive, send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
 
+        body_limit = self._limit_for(scope)
         headers = {
             key.decode("latin-1").lower(): value
             for key, value in scope.get("headers", [])
@@ -28,7 +39,7 @@ class BodyLimitMiddleware:
         declared = headers.get("content-length")
         if declared is not None:
             try:
-                if int(declared) > self.max_body_bytes:
+                if int(declared) > body_limit:
                     await self._send_413(send)
                     return
             except ValueError:
@@ -47,7 +58,7 @@ class BodyLimitMiddleware:
                 continue
 
             chunk = message.get("body", b"")
-            if len(body) + len(chunk) > self.max_body_bytes:
+            if len(body) + len(chunk) > body_limit:
                 await self._send_413(send)
                 return
             body.extend(chunk)
