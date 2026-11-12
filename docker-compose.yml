@@ -1,0 +1,30 @@
+services:
+  wasm-plugin-sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wasm-plugin-sandbox:local
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777,noexec,nosuid,nodev
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    environment:
+      TMPDIR: /tmp
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2).read()"
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

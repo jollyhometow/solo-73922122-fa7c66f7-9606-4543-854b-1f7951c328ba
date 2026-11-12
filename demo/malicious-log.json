@@ -1,0 +1,10 @@
+{
+  "event_id": "demo-0003",
+  "host": "lab-workstation-09",
+  "user": "redacted-user",
+  "process": {
+    "name": "powershell.exe",
+    "command_line": "powershell.exe -EncodedCommand malicious-payload",
+    "parent": "winword.exe"
+  }
+}

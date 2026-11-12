@@ -1,0 +1,14 @@
+{
+  "event_id": "demo-0001",
+  "host": "lab-workstation-07",
+  "user": "redacted-user",
+  "process": {
+    "name": "powershell.exe",
+    "command_line": "powershell.exe -NoProfile -Command Get-Process",
+    "parent": "explorer.exe"
+  },
+  "network": {
+    "destination": "redacted.internal",
+    "port": 443
+  }
+}

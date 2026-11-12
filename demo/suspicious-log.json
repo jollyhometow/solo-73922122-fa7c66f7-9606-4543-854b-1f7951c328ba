@@ -1,0 +1,10 @@
+{
+  "event_id": "demo-0002",
+  "host": "lab-workstation-08",
+  "user": "redacted-user",
+  "process": {
+    "name": "rundll32.exe",
+    "command_line": "rundll32.exe C:\\Users\\redacted\\suspicious.dll,Run",
+    "parent": "outlook.exe"
+  }
+}
